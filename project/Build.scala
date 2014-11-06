@@ -1,10 +1,31 @@
 import sbt._
 import Keys._
 
+object Resolvers {
+  lazy val sunRepo    = "Sun Maven2 Repo" at "http://download.java.net/maven/2"
+  lazy val sunRepoGF  = "Sun GF Maven2 Repo" at "http://download.java.net/maven/glassfish"
+  lazy val oracleRepo = "Oracle Maven2 Repo" at "http://download.oracle.com/maven"
+  lazy val oracleResolvers = Seq (sunRepo, sunRepoGF, oracleRepo)
+  
+  lazy val sprayIoReleases       = "Spray IO Release Repo" at "http://repo.spray.io"
+  lazy val typesafeResolvers     = Seq(sprayIoReleases) ++ Seq("snapshots", "releases").map(Resolver.typesafeRepo) ++Seq("snapshots", "releases").map(Resolver.sonatypeRepo)
+
+  lazy val springReleaseRepo           = "EBR Spring Release Repository" at "http://repository.springsource.com/maven/bundles/release"
+  lazy val springExternalReleaseRepo   = "EBR Spring External Release Repository" at "http://repository.springsource.com/maven/bundles/external"
+  lazy val springMilestoneRepo         = "Spring Milestone Repository" at "https://repo.springsource.org/libs-milestone"
+  lazy val springAppResolvers = Seq(springReleaseRepo, springExternalReleaseRepo)
+  
+  lazy val jBossRepo = "JBoss Public Maven Repository Group" at "https://repository.jboss.org/nexus/content/groups/public-jboss/"
+
+  lazy val coreResolvers = typesafeResolvers ++ oracleResolvers
+}
+
 object FPInScalaBuild extends Build {
+  import Resolvers._
+  
   val opts = Project.defaultSettings ++ Seq(
     scalaVersion := "2.10.3",
-    resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+    resolvers ++= coreResolvers
   )
 
   lazy val root =
