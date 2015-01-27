@@ -20,12 +20,43 @@ object Resolvers {
   lazy val coreResolvers = typesafeResolvers ++ oracleResolvers
 }
 
+object Versions {
+  lazy val scalaVer       = "2.10.3"
+  
+  lazy val scalaTestVer   = "2.1.0"
+  lazy val junitVer       = "4.11"
+
+  lazy val scalazVer      = "7.1.0"
+}
+
+
+object Dependencies {
+  import Versions._
+  
+  val provided = "provided"
+  val test     = "test"
+  val runtime  = "runtime"
+
+  lazy val junit            = "junit"           %  "junit"         % junitVer     % test
+  lazy val scalaTest        = "org.scalatest"   %% "scalatest"     % scalaTestVer % test
+  
+  lazy val testDependencies = Seq(junit, scalaTest)
+
+  lazy val scalazFull       = "org.scalaz"      %% "scalaz-full"   % scalazVer
+
+  lazy val coreDependencies   = testDependencies
+}
+
+
 object FPInScalaBuild extends Build {
   import Resolvers._
+  import Dependencies._
+  import Versions._
   
   val opts = Project.defaultSettings ++ Seq(
-    scalaVersion := "2.10.3",
-    resolvers ++= coreResolvers
+    scalaVersion := scalaVer,
+    resolvers ++= coreResolvers,
+    libraryDependencies ++= coreDependencies
   )
 
   lazy val root =
