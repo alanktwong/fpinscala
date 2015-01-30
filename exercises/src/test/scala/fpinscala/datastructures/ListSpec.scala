@@ -58,34 +58,54 @@ class ListSpec extends AbstractWordSpec {
 	}
 	
 	"dropWhile" should {
-		"fail" in {
-			(1 > 0) should be (false)
+		"work" in {
+			val l: List[Int] = List(1,2,3,4,5,6,7)
+			List.dropWhile(l, { a: Int => (a < 4)}) should be (List(4,5,6,7))
 		}
 	}
 	
 	"init" should {
-		"fail" in {
-			(1 > 0) should be (false)
+		"work" in {
+			val l: List[Int] = List(1,2,3,4,5,6,7)
+			List.init(l) should be (List(1,2,3,4,5,6))
 		}
 	}
 	
 	"length" should {
-		"fail" in {
-			(1 > 0) should be (false)
+		"work" in {
+			val l: List[Int] = List(1,2,3,4,5,6,7)
+			List.length(l) should be (7)
 		}
 	}
 	
 	"foldLeft" should {
-		"fail" in {
-			(1 > 0) should be (false)
+		"work as an implementation of length" in {
+			val l: List[Int] = List(1,2,3,4,5,6,7)
+			
+			List.lengthLeft(l) should be(7)
+		}
+		"work as an implementation of sum" in {
+			val l: List[Int] = List(1,2,3)
+			
+			List.sumLeft(l) should be(6)
+		}
+		"work as an implementation of product" in {
+			val l: List[Double] = List(1,2,4)
+			List.productLeft(l) should be(8.0)
+		}
+		"work as a reverse" in {
+			val l: List[Int] = List(1,2,3)
+			List.reverse(l) should be (List(3,2,1))
 		}
 	}
-	
 	
 	"map" should {
-		"fail" in {
-			(1 > 0) should be (false)
+		"work" in {
+			val l: List[Int] = List(1,2,3)
+			List.map(l){ 2 * _ } should be (List(2,4,6))
 		}
 	}
+	
+	// 
 }
 
