@@ -62,12 +62,12 @@ object List {
 	}
 	
 	def sum2(ns: List[Int]) = {
-		foldRight(ns, 0)((x,y) => x + y)
+		foldRight(ns, 0){_ + _}
 	}
 	
 	def product2(ns: List[Double]) =  {
 		// `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
-		foldRight(ns, 1.0)(_ * _)
+		foldRight(ns, 1.0){_ * _}
 	}
 	/*
 	 * Although we could return `Nil` when the input list is empty, we choose to throw an exception instead.
@@ -274,7 +274,7 @@ object List {
 	 * which is exactly the operation performed by `foldRight`.
 	 */
 	def appendViaFoldLeft[A](a1: List[A], a2: List[A]): List[A] = {
-		foldLeft(a1, a2){ (as,b) => Cons(b,as) }
+		foldLeft(reverse(a1), a2){ (as,b) => Cons(b,as) }
 	}
 	
 	def appendViaFoldRight[A](a1: List[A], a2: List[A]): List[A] = {
@@ -342,7 +342,8 @@ object List {
 	 * EX 3.19
 	 */
 	def filter[A](l: List[A])(p: A => Boolean): List[A] = {
-		foldLeft(l, Nil:List[A]){ (as,a) => if (p(a)) Cons(a,as) else as }
+		val xs = foldLeft(l, Nil:List[A]){ (as,a) => if (p(a)) Cons(a,as) else as }
+		reverse(xs)
 	}
 	def filter_2[A](l: List[A])(p: A => Boolean): List[A] = {
 		val buf = new collection.mutable.ListBuffer[A]

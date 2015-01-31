@@ -99,13 +99,90 @@ class ListSpec extends AbstractWordSpec {
 		}
 	}
 	
-	"map" should {
+	// 
+	"reverse" should {
 		"work" in {
 			val l: List[Int] = List(1,2,3)
-			List.map(l){ 2 * _ } should be (List(2,4,6))
+			List.reverse(l) should be (List(3,2,1))
+		}
+	}
+	"folds implemented differently" should {
+		"work w/o a buffer" in {
+			val l: List[Int] = List(1,2,3)
+			List.foldRightViaFoldLeft(l, 0){ _ + _ } should be (6)
+		}
+		"work with a buffer" in {
+			val l: List[Int] = List(1,2,3)
+			List.foldRightViaFoldLeft_1(l, 0){ _ + _ } should be (6)
+		}
+		"work for foldLeft in terms of foldRight" in {
+			val l: List[Int] = List(1,2,3)
+			List.foldLeft(l, 0){ _ + _ } should be (6)
 		}
 	}
 	
-	// 
+	"appends implemented via folds" should {
+		"work using foldLeft" in {
+			List.appendViaFoldLeft(List(1,2,3), List(4,5,6)) should be (List(1,2,3,4,5,6))
+		}
+		"work using foldRight" in {
+			List.appendViaFoldRight(List(1,2,3), List(4,5,6)) should be (List(1,2,3,4,5,6))
+		}
+	}
+	
+	"concat" should {
+		"flatten a list of lists" in {
+			List.concat(List(List(1,2,3), List(4,5,6))) should be (List(1,2,3,4,5,6))
+		}
+	}
+	
+	"map" should {
+		"work w/o using a buffer" in {
+			List.map(List(1,2,3)){ 2 * _ } should be (List(2,4,6))
+		}
+		"work using a buffer" in {
+			List.map_2(List(1,2,3)){ 2 * _ } should be (List(2,4,6))
+		}
+	}
+	
+	"filter" should {
+		"work w/o using a buffer" in {
+			List.filter(List(1,2,3,4,5,6)){ _ > 3 } should be (List(4,5,6))
+		}
+		"work using a buffer" in {
+			List.filter_2(List(1,2,3,4,5,6)){ _ > 3 } should be (List(4,5,6))
+		}
+		"work using a flatMap" in {
+			List.filterViaFlatMap(List(1,2,3,4,5,6)){ _ > 3 } should be (List(4,5,6))
+		}
+	}
+	"flatMap" should {
+		"work" in {
+			val l = List.flatMap(List(1,2,3)){ a => List(a,a)}
+			l should be (List(1,1,2,2,3,3))
+		}
+	}
+	"zipWith" should {
+		"add corresponding elements in 2 lists" in {
+			val sum = List.zipWith(List(1,2,3), List(4,5,6)){ _ + _ }
+			sum should be (List(5,7,9))
+		}
+		"multiply corresponding elements in 2 lists" in {
+			val sum = List.zipWith(List(1,2,3), List(4,5,6)){ _ * _ }
+			sum should be (List(4,10,18))
+		}
+	}
+	"hasSubsequence" should {
+		"use a correct startsWith" in {
+			List.startsWith(List(1,2,3), List(1,2)) should be (true)
+			List.startsWith(List(1,2,3), List(3)) should be (false)
+		}
+		"work" in {
+			val l = List(1,2,3,4,5,6,7,8)
+			List.hasSubsequence(l, List(1,2)) should be (true)
+			List.hasSubsequence(l, List(8,9)) should be (false)
+			List.hasSubsequence(l, List(4,5,6)) should be (true)
+		}
+	}
 }
 
