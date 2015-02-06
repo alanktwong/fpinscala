@@ -1,28 +1,54 @@
 package fpinscala.errorhandling
 
 
-// hide std library `Option`, `Some` and `Either`, since we are writing our own in this chapter
+// hide standard library `Option`, `Some` and `Either`, since we are writing our own in this chapter
 import scala.{Option => _, Some => _, Either => _, _}
 
 sealed trait Option[+A] {
 	def map[B](f: A => B): Option[B] = {
-		sys.error("todo")
+		this match {
+			case None => None
+			case Some(a) => Some(f(a))
+		}
 	}
 
 	def getOrElse[B>:A](default: => B): B = {
-		sys.error("todo")
+		this match {
+			case Some(a) => a
+			case None => default
+		}
 	}
 
 	def flatMap[B](f: A => Option[B]): Option[B] = {
-		sys.error("todo")
+		map(f) getOrElse (None)
 	}
 
+	def flatMapViaPatternMatch[B](f: A => Option[B]): Option[B] = {
+		this match {
+			case Some(a) => f(a)
+			case None => None
+		}
+	}
+	
 	def orElse[B>:A](ob: => Option[B]): Option[B] = {
-		sys.error("todo")
+		this map (Some(_)) getOrElse ob
+	}
+	
+	def orElseViaPatternMatch[B>:A](ob: => Option[B]): Option[B] = {
+		this match {
+			case Some(a) => this
+			case None => ob
+		}
 	}
 
 	def filter(f: A => Boolean): Option[A] = {
-		sys.error("todo")
+		this match {
+			case Some(a) if (f(a)) => this
+			case _ => None
+		}
+	}
+	def filterViaFlatMap(f: A => Boolean): Option[A] = {
+		flatMap(a => if (f(a)) Some(a) else None)
 	}
 }
 case class Some[+A](get: A) extends Option[A]
@@ -59,18 +85,43 @@ object Option {
 	}
 	
 	def variance(xs: Seq[Double]): Option[Double] = {
-		sys.error("todo")
+		mean(xs) flatMap (m => mean(xs.map(x => math.pow(x - m, 2))))
 	}
 
 	def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
-		sys.error("todo")
+		a flatMap (aa => b map (bb => f(aa, bb)))
 	}
 
-	def sequence[A](a: List[Option[A]]): Option[List[A]] = {
-		sys.error("todo")
+	// Here's an explicit recursive version:
+	def sequence[A](list: List[Option[A]]): Option[List[A]] = {
+		list match {
+			case Nil => Some(Nil)
+			case a::as => a flatMap{aa => sequence(as) map (aa :: _)}
+		}
 	}
-
-	def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
-		sys.error("todo")
+	/*
+	 * It can also be implemented using `foldRight` and `map2`.
+	 * The type annotation on `foldRight` is needed here; otherwise Scala wrongly
+	 * infers the result type of the fold as `Some[Nil.type]` and reports a type error (try it!).
+	 * This is an unfortunate consequence of Scala using subtyping to encode algebraic data types.
+	 */
+	def sequenceOther[A](list: List[Option[A]]): Option[List[A]] = {
+		list.foldRight[Option[List[A]]](Some(Nil)){ (x,y) =>
+			map2(x,y)(_ :: _)
+		}
+	}
+	
+	
+	def traverse[A, B](list: List[A])(f: A => Option[B]): Option[List[B]] = {
+		list match {
+			case Nil => Some(Nil)
+			case a::as => map2(f(a), traverse(as)(f))(_ :: _)
+		}
+	}
+	
+	def traverseViaFold[A, B](list: List[A])(f: A => Option[B]): Option[List[B]] = {
+		list.foldRight[Option[List[B]]](Some(Nil)){ (a,as) =>
+			map2(f(a),as)(_ :: _)
+		}
 	}
 }
