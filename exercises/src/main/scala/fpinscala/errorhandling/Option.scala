@@ -3,6 +3,7 @@ package fpinscala.errorhandling
 
 // hide standard library `Option`, `Some` and `Either`, since we are writing our own in this chapter
 import scala.{Option => _, Some => _, Either => _, _}
+import util.{Try, Success, Failure}
 
 sealed trait Option[+A] {
 	def map[B](f: A => B): Option[B] = {
@@ -87,9 +88,23 @@ object Option {
 	def variance(xs: Seq[Double]): Option[Double] = {
 		mean(xs) flatMap (m => mean(xs.map(x => math.pow(x - m, 2))))
 	}
+	
+	def lift[A,B](f: A => B): Option[A] => Option[B] = _ map f
+	
+	
+	def apply[A](t: Try[A]): Option[A] = {
+		t match {
+			case Success(t) => Some(t)
+			case Failure(e) => None
+		}
+	}
 
 	def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
-		a flatMap (aa => b map (bb => f(aa, bb)))
+		a flatMap { aa =>
+			b map { bb =>
+				f(aa, bb)
+			}
+		}
 	}
 
 	// Here's an explicit recursive version:
@@ -105,7 +120,7 @@ object Option {
 	 * infers the result type of the fold as `Some[Nil.type]` and reports a type error (try it!).
 	 * This is an unfortunate consequence of Scala using subtyping to encode algebraic data types.
 	 */
-	def sequenceOther[A](list: List[Option[A]]): Option[List[A]] = {
+	def sequenceViaHigherOrder[A](list: List[Option[A]]): Option[List[A]] = {
 		list.foldRight[Option[List[A]]](Some(Nil)){ (x,y) =>
 			map2(x,y)(_ :: _)
 		}
@@ -119,7 +134,7 @@ object Option {
 		}
 	}
 	
-	def traverseViaFold[A, B](list: List[A])(f: A => Option[B]): Option[List[B]] = {
+	def traverseViaHigherOrder[A, B](list: List[A])(f: A => Option[B]): Option[List[B]] = {
 		list.foldRight[Option[List[B]]](Some(Nil)){ (a,as) =>
 			map2(f(a),as)(_ :: _)
 		}
