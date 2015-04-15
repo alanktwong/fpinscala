@@ -94,7 +94,7 @@ object Option {
 	
 	def apply[A](t: Try[A]): Option[A] = {
 		t match {
-			case Success(t) => Some(t)
+			case util.Success(x) => Some(x)
 			case Failure(e) => None
 		}
 	}

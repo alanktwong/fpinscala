@@ -66,5 +66,5 @@ object Either {
 			case a::as => f(a).map2(traverse(as)(f)){ _ :: _ }
 		}
 	}
-
 }
+
