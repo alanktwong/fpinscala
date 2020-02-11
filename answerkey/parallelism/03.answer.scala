@@ -10,23 +10,24 @@ Note: this implementation will not prevent repeated evaluation if multiple threa
 */
 case class Map2Future[A,B,C](a: Future[A], b: Future[B],
                              f: (A,B) => C) extends Future[C] {
-  var cache: Option[C] = None
+  @volatile var cache: Option[C] = None
   def isDone = cache.isDefined
   def isCancelled = a.isCancelled || b.isCancelled
   def cancel(evenIfRunning: Boolean) =
     a.cancel(evenIfRunning) || b.cancel(evenIfRunning)
   def get = compute(Long.MaxValue)
   def get(timeout: Long, units: TimeUnit): C =
-    compute(TimeUnit.MILLISECONDS.convert(timeout, units))
+    compute(TimeUnit.NANOSECONDS.convert(timeout, units))
 
-  private def compute(timeoutMs: Long): C = cache match {
+  private def compute(timeoutInNanos: Long): C = cache match {
     case Some(c) => c
     case None =>
-      val start = System.currentTimeMillis
-      val ar = a.get(timeoutMs, TimeUnit.MILLISECONDS)
-      val stop = System.currentTimeMillis; val at = stop-start
-      val br = b.get(timeoutMs - at, TimeUnit.MILLISECONDS)
-      cache = Some(f(ar, br))
-      cache.get
+      val start = System.nanoTime
+      val ar = a.get(timeoutInNanos, TimeUnit.NANOSECONDS)
+      val stop = System.nanoTime;val aTime = stop-start
+      val br = b.get(timeoutInNanos - aTime, TimeUnit.NANOSECONDS)
+      val ret = f(ar, br)
+      cache = Some(ret)
+      ret
   }
 }

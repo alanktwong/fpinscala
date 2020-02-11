@@ -6,6 +6,8 @@ import testing._
 import parallelism._
 import state._
 import parallelism.Par._
+import language.higherKinds
+
 
 trait Functor[F[_]] {
   def map[A,B](fa: F[A])(f: A => B): F[B]
@@ -55,7 +57,7 @@ trait Monad[F[_]] extends Functor[F] {
 
   // Recursive version:
   def _replicateM[A](n: Int, ma: F[A]): F[List[A]] =
-    if (n <= 0) unit(List[A]()) else map2(ma, replicateM(n - 1, ma))(_ :: _)
+    if (n <= 0) unit(List[A]()) else map2(ma, _replicateM(n - 1, ma))(_ :: _)
 
   // Using `sequence` and the `List.fill` function of the standard library:
   def replicateM[A](n: Int, ma: F[A]): F[List[A]] =
